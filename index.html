@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>North Wildwood — Beach Replenishment History</title>
 
   <!-- GitHub Pages ready: save this file as index.html and publish. -->
@@ -14,11 +14,7 @@
       --text:#eaf0ff;
       --muted:#a9b6d3;
       --line:rgba(255,255,255,.085);
-      --ok:#2dd4bf;
-      --minor:#fbbf24;
-      --moderate:#fb7185;
-      --major:#a78bfa;
-      --hydraulic:#60a5fa;
+      --dredging:#60a5fa;
       --backpass:#2dd4bf;
       --quarry:#fbbf24;
       --shadow:0 22px 70px rgba(0,0,0,.40);
@@ -28,7 +24,7 @@
     }
 
     *{box-sizing:border-box}
-    html,body{height:100%}
+    html,body{min-height:100%}
     html{background:var(--bg)}
     body{
       margin:0;
@@ -43,43 +39,48 @@
       overflow-x:hidden;
     }
 
-    .wrap{width:min(96vw,1600px);margin:0 auto;padding:18px 16px 32px}
+    .wrap{
+      width:min(96vw,1600px);
+      margin:0 auto;
+      padding:clamp(12px,2vw,18px) clamp(10px,2vw,16px) 32px;
+    }
 
     .top{
       display:flex;
       align-items:center;
       justify-content:center;
       text-align:center;
-      gap:12px;
-      margin-bottom:14px;
+      margin:2px 0 14px;
     }
     .brand{
+      width:100%;
       display:flex;
       flex-direction:column;
       align-items:center;
       justify-content:center;
-      gap:10px;
-      width:100%;
+      gap:4px;
       text-align:center;
+      min-width:0;
     }
-    .brandLogo{
-      width:58px;height:58px;border-radius:18px;
-      display:flex;align-items:center;justify-content:center;
-      border:1px solid rgba(255,255,255,.16);
-      background:linear-gradient(135deg, rgba(96,165,250,.35), rgba(167,139,250,.22));
-      box-shadow:var(--shadow);
+    .brandTitle{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0;width:100%}
+    .kicker{
+      color:var(--muted);
+      font-weight:850;
+      font-size:clamp(12px,2.8vw,16px);
+      letter-spacing:.2px;
+      text-transform:uppercase;
+      overflow-wrap:anywhere;
+    }
+    .name{
+      font-size:clamp(28px,7vw,42px);
       font-weight:950;
-      letter-spacing:.6px;
+      letter-spacing:.2px;
+      line-height:1.02;
     }
-    .brandTitle{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0}
-    .kicker{color:var(--muted);font-weight:850;font-size:16px;letter-spacing:.2px;text-transform:uppercase}
-    .name{font-size:34px;font-weight:950;letter-spacing:.2px}
 
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:10px}
     .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
     .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
-    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid2,.grid3{grid-template-columns:1fr}}
-    @media(max-width:560px){.grid{grid-template-columns:1fr}.name{font-size:28px}.kicker{font-size:13px}}
 
     .card,.panel{
       background:var(--card);
@@ -104,24 +105,59 @@
     }
 
     .smallLab{color:var(--muted);font-weight:950;font-size:12px;letter-spacing:.2px;text-transform:uppercase;margin-bottom:8px}
-    .bigNum{font-weight:950;font-size:32px;line-height:1.05;letter-spacing:.2px}
+    .bigNum{font-weight:950;font-size:clamp(25px,5vw,34px);line-height:1.05;letter-spacing:.2px;overflow-wrap:anywhere}
     .miniText{margin-top:8px;color:var(--muted);font-size:12.5px;line-height:1.25;min-height:16px}
 
     .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
     .hrow h2{margin:0;font-size:12.5px;letter-spacing:.22px;text-transform:uppercase;color:var(--muted);font-weight:950}
     .chartWrapTall{height:330px;width:100%}
     .chartWrap{height:260px;width:100%}
-    .foot{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.25;text-align:center}
 
     .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:950;font-size:12px;white-space:nowrap}
-    .chip{width:9px;height:9px;border-radius:99px;display:inline-block}
+    .chip{width:9px;height:9px;border-radius:99px;display:inline-block;flex:0 0 auto}
 
-    .table{border-radius:14px;overflow:auto;border:1px solid var(--line);background:var(--card2)}
+    .table{border-radius:14px;overflow:auto;border:1px solid var(--line);background:var(--card2);-webkit-overflow-scrolling:touch}
     table{width:100%;border-collapse:collapse;text-align:center;min-width:760px}
     th,td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:center}
     th{color:var(--muted);font-weight:950;text-transform:uppercase;letter-spacing:.2px;font-size:11px}
     td{color:var(--text)}
     tr:last-child td{border-bottom:none}
+
+    @media(max-width:1100px){
+      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .grid2,.grid3{grid-template-columns:1fr}
+    }
+
+    @media(max-width:640px){
+      body{
+        background:
+          radial-gradient(circle at 20% 0%, rgba(96,165,250,.10), transparent 24%),
+          var(--bg);
+      }
+      .wrap{width:100%;padding:12px 10px 24px}
+      .top{margin-bottom:10px}
+      .grid{grid-template-columns:1fr;gap:10px}
+      .grid2,.grid3{gap:10px;margin-top:10px}
+      .card,.panel{border-radius:16px;padding:12px}
+      .panel{min-height:104px}
+      .smallLab{font-size:11px;margin-bottom:6px}
+      .miniText{font-size:11.5px;margin-top:6px}
+      .hrow{justify-content:center;text-align:center;margin-bottom:8px}
+      .hrow h2{font-size:11.5px}
+      .chartWrapTall{height:300px}
+      .chartWrap{height:245px}
+      table{min-width:680px}
+      th,td{padding:8px 6px;font-size:12px}
+      .tag{padding:5px 8px;font-size:11.5px}
+    }
+
+    @media(max-width:430px){
+      .wrap{padding-left:8px;padding-right:8px}
+      .chartWrapTall{height:285px}
+      .chartWrap{height:235px}
+      .card,.panel{padding:10px}
+      .bigNum{font-size:25px}
+    }
   </style>
 </head>
 
@@ -129,7 +165,6 @@
 <div class="wrap">
   <div class="top">
     <div class="brand">
-      <div class="brandLogo">NW</div>
       <div class="brandTitle">
         <div class="kicker">North Wildwood · Beach Replenishment History</div>
         <div class="name">North Wildwood</div>
@@ -162,32 +197,24 @@
 
   <div class="grid2">
     <div class="card">
-      <div class="hrow">
-        <h2>Adjusted cost through time</h2>
-      </div>
+      <div class="hrow"><h2>Adjusted cost through time</h2></div>
       <div class="chartWrapTall"><canvas id="costChart"></canvas></div>
     </div>
 
     <div class="card">
-      <div class="hrow">
-        <h2>Cubic yards by project</h2>
-      </div>
+      <div class="hrow"><h2>Cubic yards by project</h2></div>
       <div class="chartWrapTall"><canvas id="volumeChart"></canvas></div>
     </div>
   </div>
 
   <div class="grid2">
     <div class="card">
-      <div class="hrow">
-        <h2>Number of projects per year</h2>
-      </div>
+      <div class="hrow"><h2>Number of projects per year</h2></div>
       <div class="chartWrapTall"><canvas id="projectsPerYearChart"></canvas></div>
     </div>
 
     <div class="card">
-      <div class="hrow">
-        <h2>Cost efficiency</h2>
-      </div>
+      <div class="hrow"><h2>Cost efficiency</h2></div>
       <div class="chartWrapTall"><canvas id="unitCostChart"></canvas></div>
     </div>
   </div>
@@ -210,9 +237,7 @@
   <div style="height:14px"></div>
 
   <div class="card">
-    <div class="hrow">
-      <h2>Full combined data table</h2>
-    </div>
+    <div class="hrow"><h2>Full combined data table</h2></div>
     <div class="table">
       <table aria-label="North Wildwood replenishment data">
         <thead>
@@ -232,12 +257,12 @@
 
 <script>
   const DATA = [
-    {date:"Fall 2009", year:2009, seasonOrder:3, method:"Hydraulic Dredging", volume:1186400, cost2026:15433654.472090974},
-    {date:"Spring 2010", year:2010, seasonOrder:1, method:"Hydraulic Dredging", volume:464000, cost2026:null},
+    {date:"Fall 2009", year:2009, seasonOrder:3, method:"Dredging", volume:1186400, cost2026:15433654.472090974},
+    {date:"Spring 2010", year:2010, seasonOrder:1, method:"Dredging", volume:464000, cost2026:null},
     {date:"Spring 2012", year:2012, seasonOrder:1, method:"Backpassing", volume:96000, cost2026:2489166.199449242},
-    {date:"Summer 2013", year:2013, seasonOrder:2, method:"Hydraulic Dredging", volume:150530, cost2026:5713090.373611217},
+    {date:"Summer 2013", year:2013, seasonOrder:2, method:"Dredging", volume:150530, cost2026:5713090.373611217},
     {date:"Spring 2015", year:2015, seasonOrder:1, method:"Backpassing", volume:35364, cost2026:746176.3614399196},
-    {date:"Fall 2015", year:2015, seasonOrder:3, method:"Hydraulic Dredging", volume:40000, cost2026:null},
+    {date:"Fall 2015", year:2015, seasonOrder:3, method:"Dredging", volume:40000, cost2026:null},
     {date:"Winter 2016", year:2016, seasonOrder:0, method:"Backpassing", volume:15000, cost2026:266713.597299447},
     {date:"Spring 2016", year:2016, seasonOrder:1, method:"Backpassing", volume:128000, cost2026:1285769.0848542585},
     {date:"Fall 2016", year:2016, seasonOrder:3, method:"Backpassing", volume:30000, cost2026:291091.4897884475},
@@ -248,20 +273,20 @@
     {date:"Spring 2021", year:2021, seasonOrder:1, method:"Backpassing", volume:356556, cost2026:4983434.724008346},
     {date:"Spring 2022", year:2022, seasonOrder:1, method:"Backpassing", volume:361221, cost2026:3995510.0514883916},
     {date:"Fall 2023", year:2023, seasonOrder:3, method:"Quarry", volume:4923, cost2026:380332.17705656297},
-    {date:"Summer 2024", year:2024, seasonOrder:2, method:"Hydraulic Dredging", volume:783000, cost2026:17895507.915753033}
+    {date:"Summer 2024", year:2024, seasonOrder:2, method:"Dredging", volume:783000, cost2026:17895507.915753033}
   ];
 
-  const METHODS = ["Hydraulic Dredging", "Backpassing", "Quarry"];
+  const METHODS = ["Dredging", "Backpassing", "Quarry"];
   const YEARS = Array.from({length:18}, (_,i)=>2009+i); // 2009 through 2026
 
   const COLORS = {
-    "Hydraulic Dredging":"rgba(96,165,250,.88)",
+    "Dredging":"rgba(96,165,250,.88)",
     "Backpassing":"rgba(45,212,191,.84)",
     "Quarry":"rgba(251,191,36,.88)"
   };
 
   const BORDER_COLORS = {
-    "Hydraulic Dredging":"rgba(96,165,250,1)",
+    "Dredging":"rgba(96,165,250,1)",
     "Backpassing":"rgba(45,212,191,1)",
     "Quarry":"rgba(251,191,36,1)"
   };
@@ -296,14 +321,39 @@
   Chart.defaults.borderColor = "rgba(255,255,255,.08)";
   Chart.defaults.font.family = "ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial";
 
-  const commonYearScales = {
-    x:{stacked:true, grid:{display:false}, ticks:{maxRotation:0,minRotation:0}},
-    y:{stacked:true, beginAtZero:true, grid:{color:"rgba(255,255,255,.08)"}}
-  };
-  const commonProjectScales = {
-    x:{stacked:true, grid:{display:false}, ticks:{maxRotation:55,minRotation:45}},
-    y:{stacked:true, beginAtZero:true, grid:{color:"rgba(255,255,255,.08)"}}
-  };
+  function isSmallScreen(){ return window.matchMedia("(max-width:640px)").matches; }
+
+  function yearScales(yTickCallback){
+    return {
+      x:{
+        stacked:true,
+        grid:{display:false},
+        ticks:{maxRotation:isSmallScreen()?45:0, minRotation:isSmallScreen()?35:0, autoSkip:isSmallScreen(), maxTicksLimit:isSmallScreen()?9:18}
+      },
+      y:{
+        stacked:true,
+        beginAtZero:true,
+        grid:{color:"rgba(255,255,255,.08)"},
+        ticks:{callback:yTickCallback || (v=>v), precision:0}
+      }
+    };
+  }
+
+  function projectScales(yTickCallback){
+    return {
+      x:{
+        stacked:true,
+        grid:{display:false},
+        ticks:{maxRotation:isSmallScreen()?70:55, minRotation:isSmallScreen()?60:45, autoSkip:isSmallScreen(), maxTicksLimit:isSmallScreen()?8:17}
+      },
+      y:{
+        stacked:true,
+        beginAtZero:true,
+        grid:{color:"rgba(255,255,255,.08)"},
+        ticks:{callback:yTickCallback || (v=>v)}
+      }
+    };
+  }
 
   const labels = DATA.map(d=>d.date);
 
@@ -324,10 +374,10 @@
       maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{position:"top", labels:{usePointStyle:true}},
+        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
         tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${money0.format(ctx.raw || 0)}`}}
       },
-      scales:{...commonYearScales, y:{...commonYearScales.y, ticks:{callback:v=>money0.format(v)}}}
+      scales:yearScales(v=>money0.format(v))
     }
   });
 
@@ -348,10 +398,10 @@
       maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{position:"top", labels:{usePointStyle:true}},
+        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
         tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${num0.format(ctx.raw || 0)} yd³`}}
       },
-      scales:{...commonProjectScales, y:{...commonProjectScales.y, ticks:{callback:v=>num0.format(v)}}}
+      scales:projectScales(v=>num0.format(v))
     }
   });
 
@@ -372,10 +422,10 @@
       maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{position:"top", labels:{usePointStyle:true}},
+        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
         tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw || 0} project${(ctx.raw || 0)===1?"":"s"}`}}
       },
-      scales:{...commonYearScales, y:{...commonYearScales.y, ticks:{precision:0}}}
+      scales:yearScales(v=>v)
     }
   });
 
@@ -396,10 +446,10 @@
       maintainAspectRatio:false,
       interaction:{mode:"index",intersect:false},
       plugins:{
-        legend:{position:"top", labels:{usePointStyle:true}},
+        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
         tooltip:{callbacks:{label:ctx=>isNum(ctx.raw)?`${ctx.dataset.label}: ${money2.format(ctx.raw)} per yd³`:"Unknown"}}
       },
-      scales:{...commonProjectScales, y:{...commonProjectScales.y, ticks:{callback:v=>money0.format(v)}}}
+      scales:projectScales(v=>money0.format(v))
     }
   });
 
@@ -407,10 +457,28 @@
     const keys = Object.keys(obj);
     new Chart(document.getElementById(id), {
       type:"doughnut",
-      data:{labels:keys, datasets:[{label:title, data:keys.map(k=>obj[k]), backgroundColor:keys.map(k=>COLORS[k]), borderColor:"rgba(11,18,32,.9)", borderWidth:2}]},
-      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{usePointStyle:true}}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${formatter(ctx.raw)}`}}}, cutout:"62%"}
+      data:{
+        labels:keys,
+        datasets:[{
+          label:title,
+          data:keys.map(k=>obj[k]),
+          backgroundColor:keys.map(k=>COLORS[k]),
+          borderColor:"rgba(11,18,32,.9)",
+          borderWidth:2
+        }]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+          legend:{position:"bottom", labels:{usePointStyle:true, boxWidth:8}},
+          tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${formatter(ctx.raw)}`}}
+        },
+        cutout:isSmallScreen()?"56%":"62%"
+      }
     });
   }
+
   donut("methodVolumeChart", "Volume", byMethod("volume"), v=>`${num0.format(v)} yd³`);
   donut("methodCostChart", "Cost", byMethod("cost2026"), v=>money0.format(v));
   donut("methodCountChart", "Projects", countByMethod(), v=>`${v} projects`);

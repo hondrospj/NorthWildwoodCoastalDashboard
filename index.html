@@ -2,26 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>North Wildwood Replenishment Dashboard</title>
 
   <!-- Facebook / Open Graph preview card -->
-  <!-- Replace YOUR-GITHUB-USERNAME and YOUR-REPO with your real GitHub Pages URL. -->
   <meta property="og:title" content="North Wildwood Replenishment Dashboard">
   <meta property="og:description" content="Explore North Wildwood beach replenishment projects, sand volume, project count, cost trends, and inflation-adjusted spending through time.">
-  <meta property="og:image" content="https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO/assets/north-wildwood-preview.png">
+  <meta property="og:image" content="https://hondrospj.github.io/NorthWildwoodCoastalDashboard/assets/north-wildwood-preview.png">
+  <meta property="og:image:secure_url" content="https://hondrospj.github.io/NorthWildwoodCoastalDashboard/assets/north-wildwood-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO/">
+  <meta property="og:url" content="https://hondrospj.github.io/NorthWildwoodCoastalDashboard/">
 
   <!-- Twitter / X preview card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="North Wildwood Replenishment Dashboard">
   <meta name="twitter:description" content="Explore North Wildwood beach replenishment projects, sand volume, project count, cost trends, and inflation-adjusted spending through time.">
-  <meta name="twitter:image" content="https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO/assets/north-wildwood-preview.png">
+  <meta name="twitter:image" content="https://hondrospj.github.io/NorthWildwoodCoastalDashboard/assets/north-wildwood-preview.png">
 
-  <!-- GitHub Pages ready: save this file as index.html and publish. -->
+  <!-- Drop this file into GitHub Pages as index.html. It is fully self-contained except Chart.js CDN. -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
   <style>
@@ -30,6 +31,10 @@
       --text:#eaf0ff;
       --muted:#a9b6d3;
       --line:rgba(255,255,255,.085);
+      --ok:#2dd4bf;
+      --minor:#fbbf24;
+      --moderate:#fb7185;
+      --major:#a78bfa;
       --dredging:#60a5fa;
       --backpass:#2dd4bf;
       --quarry:#fbbf24;
@@ -40,7 +45,7 @@
     }
 
     *{box-sizing:border-box}
-    html,body{min-height:100%}
+    html,body{height:100%}
     html{background:var(--bg)}
     body{
       margin:0;
@@ -58,47 +63,44 @@
     .wrap{
       width:min(96vw,1600px);
       margin:0 auto;
-      padding:clamp(12px,2vw,18px) clamp(10px,2vw,16px) 32px;
+      padding:16px 16px 28px;
     }
 
-    .top{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      text-align:center;
-      margin:2px 0 14px;
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:var(--text)}
+    .brandLogo{
+      width:62px;height:62px;border-radius:16px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,rgba(96,165,250,.95),rgba(45,212,191,.86));
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.18);
+      font-weight:950;font-size:28px;color:#06111f;
+      flex:0 0 auto;
     }
-    .brand{
-      width:100%;
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      justify-content:center;
-      gap:4px;
-      text-align:center;
-      min-width:0;
+    .brandTitle{min-width:0}
+    .kicker{color:var(--muted);font-weight:850;font-size:16px;letter-spacing:.2px;text-transform:uppercase}
+    .name{font-size:32px;font-weight:950;letter-spacing:.2px;line-height:1.05}
+
+    .topRight{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0}
+    .pill{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.16);
+      box-shadow:var(--shadow);
+      font-weight:950;font-size:12.5px;white-space:nowrap;
     }
-    .brandTitle{display:flex;flex-direction:column;align-items:center;text-align:center;gap:2px;min-width:0;width:100%}
-    .kicker{
-      color:var(--muted);
-      font-weight:850;
-      font-size:clamp(12px,2.8vw,16px);
-      letter-spacing:.2px;
-      text-transform:uppercase;
-      overflow-wrap:anywhere;
-    }
-    .name{
-      font-size:clamp(28px,7vw,42px);
-      font-weight:950;
-      letter-spacing:.2px;
-      line-height:1.02;
-    }
+    .dot{width:9px;height:9px;border-radius:999px;background:var(--ok);box-shadow:0 0 0 4px rgba(45,212,191,.16)}
 
     .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:10px}
-    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
-    .grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+    .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+    @media(max-width:720px){
+      .top{flex-direction:column;align-items:flex-start}.topRight{width:100%;justify-content:flex-start}.grid{grid-template-columns:1fr}.name{font-size:27px}.kicker{font-size:13px}
+    }
 
-    .card,.panel{
+    .card{
       background:var(--card);
       border:1px solid var(--line);
       border-radius:var(--radius);
@@ -109,72 +111,62 @@
       isolation:isolate;
       contain:paint;
       transform:translateZ(0);
+      -webkit-transform:translateZ(0);
     }
     .panel{
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-      min-height:132px;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      align-items:center;
-      text-align:center;
+      background:var(--card2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+      min-height:150px;
     }
-
-    .smallLab{color:var(--muted);font-weight:950;font-size:12px;letter-spacing:.2px;text-transform:uppercase;margin-bottom:8px}
-    .bigNum{font-weight:950;font-size:clamp(25px,5vw,34px);line-height:1.05;letter-spacing:.2px;overflow-wrap:anywhere}
-    .miniText{margin-top:8px;color:var(--muted);font-size:12.5px;line-height:1.25;min-height:16px}
-
-    .hrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
     .hrow h2{margin:0;font-size:12.5px;letter-spacing:.22px;text-transform:uppercase;color:var(--muted);font-weight:950}
-    .chartWrapTall{height:330px;width:100%}
-    .chartWrap{height:260px;width:100%}
-
+    .hint{color:var(--muted);font-size:12.5px;line-height:1.35}
+    .bigNum{font-size:34px;font-weight:950;line-height:1.05;letter-spacing:.2px;margin-top:8px}
+    .smallLab{color:var(--muted);font-weight:950;font-size:11px;text-transform:uppercase;letter-spacing:.2px}
+    .miniText{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:8px}
     .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:950;font-size:12px;white-space:nowrap}
-    .chip{width:9px;height:9px;border-radius:99px;display:inline-block;flex:0 0 auto}
+    .chip{width:9px;height:9px;border-radius:99px;display:inline-block}
+    .chartWrapTall{height:350px;width:100%}
+    .chartWrap{height:270px;width:100%}
+    .foot{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.3;text-align:center}
 
-    .table{border-radius:14px;overflow:auto;border:1px solid var(--line);background:var(--card2);-webkit-overflow-scrolling:touch}
-    table{width:100%;border-collapse:collapse;text-align:center;min-width:760px}
+    .seg{display:inline-flex;border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+    .segBtn{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:950;font-size:12px;letter-spacing:.12px;text-transform:uppercase;padding:10px 12px;cursor:pointer;white-space:nowrap}
+    .segBtn:hover{filter:brightness(1.08)}
+    .segBtn.isActive{color:var(--text);background:rgba(255,255,255,.08)}
+
+    .table{border-radius:14px;overflow:auto;border:1px solid var(--line);background:var(--card2)}
+    table{width:100%;border-collapse:collapse;text-align:center;min-width:860px}
     th,td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:center}
     th{color:var(--muted);font-weight:950;text-transform:uppercase;letter-spacing:.2px;font-size:11px}
     td{color:var(--text)}
     tr:last-child td{border-bottom:none}
 
-    @media(max-width:1100px){
-      .grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-      .grid2,.grid3{grid-template-columns:1fr}
+    @media (max-width:720px){
+      .wrap{width:100%;padding:12px 10px 22px}
+      .top{align-items:flex-start}
+      .name{font-size:24px;line-height:1.08;white-space:normal}
+      .kicker{font-size:12px;white-space:normal}
+      .grid,.grid2,.grid3{grid-template-columns:1fr;gap:10px}
+      .panel,.card{border-radius:14px;padding:12px}
+      .bigNum{font-size:27px;line-height:1.1}
+      .chartWrapTall{height:310px}
+      .chartWrap{height:280px}
+      table{min-width:720px}
+      th,td{font-size:12px;padding:8px 6px}
     }
 
-    @media(max-width:640px){
-      body{
-        background:
-          radial-gradient(circle at 20% 0%, rgba(96,165,250,.10), transparent 24%),
-          var(--bg);
-      }
-      .wrap{width:100%;padding:12px 10px 24px}
-      .top{margin-bottom:10px}
-      .grid{grid-template-columns:1fr;gap:10px}
-      .grid2,.grid3{gap:10px;margin-top:10px}
-      .card,.panel{border-radius:16px;padding:12px}
-      .panel{min-height:104px}
-      .smallLab{font-size:11px;margin-bottom:6px}
-      .miniText{font-size:11.5px;margin-top:6px}
-      .hrow{justify-content:center;text-align:center;margin-bottom:8px}
-      .hrow h2{font-size:11.5px}
-      .chartWrapTall{height:300px}
-      .chartWrap{height:245px}
-      table{min-width:680px}
-      th,td{padding:8px 6px;font-size:12px}
-      .tag{padding:5px 8px;font-size:11.5px}
-    }
-
-    @media(max-width:430px){
-      .wrap{padding-left:8px;padding-right:8px}
-      .chartWrapTall{height:285px}
-      .chartWrap{height:235px}
-      .card,.panel{padding:10px}
-      .bigNum{font-size:25px}
+    @media (max-width:420px){
+      .name{font-size:21px}
+      .bigNum{font-size:23px}
+      .chartWrapTall{height:280px}
     }
   </style>
+  <link rel="canonical" href="https://hondrospj.github.io/NorthWildwoodCoastalDashboard/">
 </head>
 
 <body>
@@ -182,9 +174,12 @@
   <div class="top">
     <div class="brand">
       <div class="brandTitle">
+        <div class="kicker">Beach Replenishment History</div>
         <div class="name">North Wildwood Replenishment Dashboard</div>
       </div>
     </div>
+
+
   </div>
 
   <div class="grid">
@@ -204,33 +199,48 @@
       <div class="miniText" id="largestVolumeSub">—</div>
     </div>
     <div class="panel">
-      <div class="smallLab">Number of projects</div>
+      <div class="smallLab">Number of Projects</div>
       <div class="bigNum" id="projectCount">—</div>
-      <div class="miniText"></div>
+      <div class="miniText">2009–2024</div>
     </div>
   </div>
 
   <div class="grid2">
     <div class="card">
-      <div class="hrow"><h2>Adjusted cost through time</h2></div>
+      <div class="hrow">
+        <h2>Adjusted cost through time</h2>
+        
+      </div>
       <div class="chartWrapTall"><canvas id="costChart"></canvas></div>
+      
     </div>
 
     <div class="card">
-      <div class="hrow"><h2>Cubic yards by project</h2></div>
+      <div class="hrow">
+        <h2>Cubic yards by project</h2>
+        
+      </div>
       <div class="chartWrapTall"><canvas id="volumeChart"></canvas></div>
+      
     </div>
   </div>
 
   <div class="grid2">
     <div class="card">
-      <div class="hrow"><h2>Number of projects per year</h2></div>
-      <div class="chartWrapTall"><canvas id="projectsPerYearChart"></canvas></div>
+      <div class="hrow">
+        <h2>Number of projects per year</h2>
+      </div>
+      <div class="chartWrapTall"><canvas id="projectYearChart"></canvas></div>
+      
     </div>
 
     <div class="card">
-      <div class="hrow"><h2>Cost efficiency</h2></div>
+      <div class="hrow">
+        <h2>Cost efficiency</h2>
+        
+      </div>
       <div class="chartWrapTall"><canvas id="unitCostChart"></canvas></div>
+      
     </div>
   </div>
 
@@ -252,7 +262,10 @@
   <div style="height:14px"></div>
 
   <div class="card">
-    <div class="hrow"><h2>Full combined data table</h2></div>
+    <div class="hrow">
+      <h2>Full combined data table</h2>
+      <div class="hint">2024 dollars inflated to 2026 using factor 1.0526769362</div>
+    </div>
     <div class="table">
       <table aria-label="North Wildwood replenishment data">
         <thead>
@@ -260,6 +273,7 @@
             <th>Date</th>
             <th>Methodology</th>
             <th>Volume (yd³)</th>
+            <th>Cost (2024 $)</th>
             <th>Cost (2026 $)</th>
             <th>Cost / yd³ (2026 $)</th>
           </tr>
@@ -267,32 +281,30 @@
         <tbody id="dataBody"></tbody>
       </table>
     </div>
+    
   </div>
 </div>
 
 <script>
   const DATA = [
-    {date:"Fall 2009", year:2009, seasonOrder:3, method:"Dredging", volume:1186400, cost2026:15433654.472090974},
-    {date:"Spring 2010", year:2010, seasonOrder:1, method:"Dredging", volume:464000, cost2026:null},
-    {date:"Spring 2012", year:2012, seasonOrder:1, method:"Backpassing", volume:96000, cost2026:2489166.199449242},
-    {date:"Summer 2013", year:2013, seasonOrder:2, method:"Dredging", volume:150530, cost2026:5713090.373611217},
-    {date:"Spring 2015", year:2015, seasonOrder:1, method:"Backpassing", volume:35364, cost2026:746176.3614399196},
-    {date:"Fall 2015", year:2015, seasonOrder:3, method:"Dredging", volume:40000, cost2026:null},
-    {date:"Winter 2016", year:2016, seasonOrder:0, method:"Backpassing", volume:15000, cost2026:266713.597299447},
-    {date:"Spring 2016", year:2016, seasonOrder:1, method:"Backpassing", volume:128000, cost2026:1285769.0848542585},
-    {date:"Fall 2016", year:2016, seasonOrder:3, method:"Backpassing", volume:30000, cost2026:291091.4897884475},
-    {date:"Spring 2017", year:2017, seasonOrder:1, method:"Backpassing", volume:206370, cost2026:3906951.498874947},
-    {date:"Spring 2018", year:2018, seasonOrder:1, method:"Backpassing", volume:155000, cost2026:4208315.0102070365},
-    {date:"Spring 2019", year:2019, seasonOrder:1, method:"Backpassing", volume:169062, cost2026:4277642.207872664},
-    {date:"Spring 2020", year:2020, seasonOrder:1, method:"Backpassing", volume:210000, cost2026:5653327.7985880915},
-    {date:"Spring 2021", year:2021, seasonOrder:1, method:"Backpassing", volume:356556, cost2026:4983434.724008346},
-    {date:"Spring 2022", year:2022, seasonOrder:1, method:"Backpassing", volume:361221, cost2026:3995510.0514883916},
-    {date:"Fall 2023", year:2023, seasonOrder:3, method:"Quarry", volume:4923, cost2026:380332.17705656297},
-    {date:"Summer 2024", year:2024, seasonOrder:2, method:"Dredging", volume:783000, cost2026:17895507.915753033}
+    {date:"Fall 2009", sort:2009.75, method:"Dredging", volume:1186400, cost2024:14661340, cost2026:15433654.472090974},
+    {date:"Spring 2010", sort:2010.25, method:"Dredging", volume:464000, cost2024:null, cost2026:null},
+    {date:"Spring 2012", sort:2012.25, method:"Backpassing", volume:96000, cost2024:2364606, cost2026:2489166.199449242},
+    {date:"Summer 2013", sort:2013.50, method:"Dredging", volume:150530, cost2024:5427202, cost2026:5713090.373611217},
+    {date:"Spring 2015", sort:2015.25, method:"Backpassing", volume:35364, cost2024:708837, cost2026:746176.3614399196},
+    {date:"Fall 2015", sort:2015.75, method:"Dredging", volume:40000, cost2024:null, cost2026:null},
+    {date:"Winter 2016", sort:2016.00, method:"Backpassing", volume:15000, cost2024:253367, cost2026:266713.597299447},
+    {date:"Spring 2016", sort:2016.25, method:"Backpassing", volume:128000, cost2024:1221428, cost2026:1285769.0848542585},
+    {date:"Fall 2016", sort:2016.75, method:"Backpassing", volume:30000, cost2024:276525, cost2026:291091.4897884475},
+    {date:"Spring 2017", sort:2017.25, method:"Backpassing", volume:206370, cost2024:3711444, cost2026:3906951.498874947},
+    {date:"Spring 2018", sort:2018.25, method:"Backpassing", volume:155000, cost2024:3997727, cost2026:4208315.0102070365},
+    {date:"Spring 2019", sort:2019.25, method:"Backpassing", volume:169062, cost2024:4063585, cost2026:4277642.207872664},
+    {date:"Spring 2020", sort:2020.25, method:"Backpassing", volume:210000, cost2024:5370430, cost2026:5653327.7985880915},
+    {date:"Spring 2021", sort:2021.25, method:"Backpassing", volume:356556, cost2024:4734059, cost2026:4983434.724008346},
+    {date:"Spring 2022", sort:2022.25, method:"Backpassing", volume:361221, cost2024:3795571, cost2026:3995510.0514883916},
+    {date:"Fall 2023", sort:2023.75, method:"Quarry", volume:4923, cost2024:361300, cost2026:380332.17705656297},
+    {date:"Summer 2024", sort:2024.50, method:"Dredging", volume:783000, cost2024:17000000, cost2026:17895507.915753033}
   ];
-
-  const METHODS = ["Dredging", "Backpassing", "Quarry"];
-  const YEARS = Array.from({length:18}, (_,i)=>2009+i); // 2009 through 2026
 
   const COLORS = {
     "Dredging":"rgba(96,165,250,.88)",
@@ -310,211 +322,135 @@
   const money2 = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
   const num0 = new Intl.NumberFormat("en-US", {maximumFractionDigits:0});
 
-  function isNum(v){ return Number.isFinite(v); }
-  function sum(arr){ return arr.reduce((a,b)=>a+(isNum(b)?b:0),0); }
+  const labels = DATA.map(d=>d.date);
+  const years = DATA.map(d=>d.sort);
+  const yearLabels = Array.from({length:18}, (_,i)=>String(2009+i));
+  const cost2026 = DATA.map(d=>d.cost2026);
+  const volumes = DATA.map(d=>d.volume);
+  const barColors = DATA.map(d=>COLORS[d.method]);
+  const borderColors = DATA.map(d=>BORDER_COLORS[d.method]);
+
+  function sumByCalendarYear(field){
+    return yearLabels.map(y=>DATA
+      .filter(d=>Math.floor(d.sort) === Number(y) && Number.isFinite(d[field]))
+      .reduce((a,d)=>a+d[field],0));
+  }
+
+  function countByCalendarYear(){
+    return yearLabels.map(y=>DATA.filter(d=>Math.floor(d.sort) === Number(y)).length);
+  }
+
+  function sum(arr){ return arr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0); }
   function byMethod(field){
-    const out = Object.fromEntries(METHODS.map(m=>[m,0]));
+    const out = {"Dredging":0, "Backpassing":0, "Quarry":0};
     for(const d of DATA){
       const v = d[field];
-      if(isNum(v)) out[d.method] += v;
+      if(Number.isFinite(v)) out[d.method] += v;
     }
     return out;
   }
   function countByMethod(){
-    const out = Object.fromEntries(METHODS.map(m=>[m,0]));
+    const out = {"Dredging":0, "Backpassing":0, "Quarry":0};
     for(const d of DATA) out[d.method] += 1;
     return out;
   }
-  function annualByMethod(field, method){
-    return YEARS.map(y=>DATA.filter(d=>d.year===y && d.method===method).reduce((a,d)=>a+(isNum(d[field])?d[field]:0),0));
+  function cumulative(field){
+    let total = 0;
+    return DATA.map(d=>{
+      if(Number.isFinite(d[field])) total += d[field];
+      return total;
+    });
   }
-  function annualCountByMethod(method){
-    return YEARS.map(y=>DATA.filter(d=>d.year===y && d.method===method).length);
+
+  function linearFit(xs, ys){
+    let n=0, sx=0, sy=0, sxy=0, sxx=0;
+    for(let i=0;i<xs.length;i++){
+      const x=xs[i], y=ys[i];
+      if(!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      n++; sx+=x; sy+=y; sxy+=x*y; sxx+=x*x;
+    }
+    const denom = n*sxx - sx*sx;
+    if(n < 2 || Math.abs(denom) < 1e-12) return xs.map(()=>null);
+    const m = (n*sxy - sx*sy) / denom;
+    const b = (sy - m*sx) / n;
+    return xs.map(x=>m*x+b);
   }
 
   Chart.defaults.color = "rgba(234,240,255,.86)";
   Chart.defaults.borderColor = "rgba(255,255,255,.08)";
   Chart.defaults.font.family = "ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial";
 
-  function isSmallScreen(){ return window.matchMedia("(max-width:640px)").matches; }
-
-  function yearScales(yTickCallback){
-    return {
-      x:{
-        stacked:true,
-        grid:{display:false},
-        ticks:{maxRotation:isSmallScreen()?45:0, minRotation:isSmallScreen()?35:0, autoSkip:isSmallScreen(), maxTicksLimit:isSmallScreen()?9:18}
-      },
-      y:{
-        stacked:true,
-        beginAtZero:true,
-        grid:{color:"rgba(255,255,255,.08)"},
-        ticks:{callback:yTickCallback || (v=>v), precision:0}
-      }
-    };
-  }
-
-  function projectScales(yTickCallback){
-    return {
-      x:{
-        stacked:true,
-        grid:{display:false},
-        ticks:{maxRotation:isSmallScreen()?70:55, minRotation:isSmallScreen()?60:45, autoSkip:isSmallScreen(), maxTicksLimit:isSmallScreen()?8:17}
-      },
-      y:{
-        stacked:true,
-        beginAtZero:true,
-        grid:{color:"rgba(255,255,255,.08)"},
-        ticks:{callback:yTickCallback || (v=>v)}
-      }
-    };
-  }
-
-  const labels = DATA.map(d=>d.date);
+  const tooltipMoney = v => Number.isFinite(v) ? money0.format(v) : "Unknown";
+  const commonScales = {
+    x: {grid:{display:false}, ticks:{maxRotation:55,minRotation:45}},
+    y: {beginAtZero:true, grid:{color:"rgba(255,255,255,.08)"}}
+  };
 
   new Chart(document.getElementById("costChart"), {
     type:"bar",
     data:{
-      labels:YEARS,
-      datasets:METHODS.map(method=>({
-        label:method,
-        data:annualByMethod("cost2026", method),
-        backgroundColor:COLORS[method],
-        borderColor:BORDER_COLORS[method],
-        borderWidth:1
-      }))
+      labels:yearLabels,
+      datasets:[
+        {label:"Annual cost, adjusted to 2026 dollars", data:sumByCalendarYear("cost2026"), backgroundColor:"rgba(167,139,250,.78)", borderColor:"rgba(167,139,250,1)", borderWidth:1}
+      ]
     },
     options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{mode:"index",intersect:false},
-      plugins:{
-        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
-        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${money0.format(ctx.raw || 0)}`}}
-      },
-      scales:yearScales(v=>money0.format(v))
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${tooltipMoney(ctx.raw)}`}}},
+      scales:{x:{grid:{display:false}}, y:{beginAtZero:true, ticks:{callback:v=>money0.format(v)}, grid:{color:"rgba(255,255,255,.08)"}}}
     }
   });
 
   new Chart(document.getElementById("volumeChart"), {
     type:"bar",
-    data:{
-      labels,
-      datasets:METHODS.map(method=>({
-        label:method,
-        data:DATA.map(d=>d.method===method ? d.volume : null),
-        backgroundColor:COLORS[method],
-        borderColor:BORDER_COLORS[method],
-        borderWidth:1
-      }))
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{mode:"index",intersect:false},
-      plugins:{
-        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
-        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${num0.format(ctx.raw || 0)} yd³`}}
-      },
-      scales:projectScales(v=>num0.format(v))
-    }
+    data:{labels, datasets:[{label:"Volume placed (yd³)", data:volumes, backgroundColor:barColors, borderColor:borderColors, borderWidth:1}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${num0.format(ctx.raw)} yd³ · ${DATA[ctx.dataIndex].method}`}}}, scales:{...commonScales, y:{beginAtZero:true, ticks:{callback:v=>num0.format(v)}}}}
   });
 
-  new Chart(document.getElementById("projectsPerYearChart"), {
+  new Chart(document.getElementById("projectYearChart"), {
     type:"bar",
-    data:{
-      labels:YEARS,
-      datasets:METHODS.map(method=>({
-        label:method,
-        data:annualCountByMethod(method),
-        backgroundColor:COLORS[method],
-        borderColor:BORDER_COLORS[method],
-        borderWidth:1
-      }))
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{mode:"index",intersect:false},
-      plugins:{
-        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
-        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw || 0} project${(ctx.raw || 0)===1?"":"s"}`}}
-      },
-      scales:yearScales(v=>v)
-    }
+    data:{labels:yearLabels, datasets:[{label:"Projects", data:countByCalendarYear(), backgroundColor:"rgba(45,212,191,.78)", borderColor:"rgba(45,212,191,1)", borderWidth:1}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${ctx.raw} project${ctx.raw===1?"":"s"}`}}}, scales:{x:{grid:{display:false}}, y:{beginAtZero:true, ticks:{precision:0}, grid:{color:"rgba(255,255,255,.08)"}}}}
   });
 
   new Chart(document.getElementById("unitCostChart"), {
     type:"bar",
     data:{
       labels,
-      datasets:METHODS.map(method=>({
-        label:method,
-        data:DATA.map(d=>d.method===method && isNum(d.cost2026) ? d.cost2026/d.volume : null),
-        backgroundColor:COLORS[method],
-        borderColor:BORDER_COLORS[method],
-        borderWidth:1
-      }))
+      datasets:[{label:"Cost per cubic yard (2026 $)", data:DATA.map(d=>Number.isFinite(d.cost2026)?d.cost2026/d.volume:null), backgroundColor:barColors, borderColor:borderColors, borderWidth:1}]
     },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      interaction:{mode:"index",intersect:false},
-      plugins:{
-        legend:{position:"top", labels:{usePointStyle:true, boxWidth:8}},
-        tooltip:{callbacks:{label:ctx=>isNum(ctx.raw)?`${ctx.dataset.label}: ${money2.format(ctx.raw)} per yd³`:"Unknown"}}
-      },
-      scales:projectScales(v=>money0.format(v))
-    }
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>Number.isFinite(ctx.raw)?`${money2.format(ctx.raw)} per yd³ · ${DATA[ctx.dataIndex].method}`:"Unknown"}}}, scales:{...commonScales, y:{beginAtZero:true, ticks:{callback:v=>money0.format(v)}}}}
   });
 
   function donut(id, title, obj, formatter){
     const keys = Object.keys(obj);
     new Chart(document.getElementById(id), {
       type:"doughnut",
-      data:{
-        labels:keys,
-        datasets:[{
-          label:title,
-          data:keys.map(k=>obj[k]),
-          backgroundColor:keys.map(k=>COLORS[k]),
-          borderColor:"rgba(11,18,32,.9)",
-          borderWidth:2
-        }]
-      },
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{position:"bottom", labels:{usePointStyle:true, boxWidth:8}},
-          tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${formatter(ctx.raw)}`}}
-        },
-        cutout:isSmallScreen()?"56%":"62%"
-      }
+      data:{labels:keys, datasets:[{label:title, data:keys.map(k=>obj[k]), backgroundColor:keys.map(k=>COLORS[k]), borderColor:"rgba(11,18,32,.9)", borderWidth:2}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{usePointStyle:true}}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${formatter(ctx.raw)}`}}}, cutout:"62%"}
     });
   }
-
   donut("methodVolumeChart", "Volume", byMethod("volume"), v=>`${num0.format(v)} yd³`);
   donut("methodCostChart", "Cost", byMethod("cost2026"), v=>money0.format(v));
   donut("methodCountChart", "Projects", countByMethod(), v=>`${v} projects`);
 
-  document.getElementById("totalVolume").textContent = `${num0.format(sum(DATA.map(d=>d.volume)))} yd³`;
-  document.getElementById("totalCost").textContent = money0.format(sum(DATA.map(d=>d.cost2026)));
-  document.getElementById("projectCount").textContent = num0.format(DATA.length);
-
+  document.getElementById("totalVolume").textContent = `${num0.format(sum(volumes))} yd³`;
+  document.getElementById("totalCost").textContent = money0.format(sum(cost2026));
   const maxVol = DATA.reduce((a,b)=>b.volume>a.volume?b:a, DATA[0]);
   document.getElementById("largestVolume").textContent = `${num0.format(maxVol.volume)} yd³`;
-  document.getElementById("largestVolumeSub").textContent = maxVol.date;
+  document.getElementById("largestVolumeSub").textContent = `${maxVol.date}`;
+  document.getElementById("projectCount").textContent = num0.format(DATA.length);
 
   const body = document.getElementById("dataBody");
-  body.innerHTML = DATA.map(d=>{
-    const unit = isNum(d.cost2026) ? d.cost2026/d.volume : null;
+  body.innerHTML = DATA.filter(d => d.date !== "Summer 2024").map(d=>{
+    const unit = Number.isFinite(d.cost2026) ? d.cost2026/d.volume : null;
     return `<tr>
       <td>${d.date}</td>
       <td><span class="tag"><span class="chip" style="background:${COLORS[d.method]}"></span>${d.method}</span></td>
       <td>${num0.format(d.volume)}</td>
-      <td>${isNum(d.cost2026) ? money0.format(d.cost2026) : "Unknown"}</td>
-      <td>${isNum(unit) ? money2.format(unit) : "Unknown"}</td>
+      <td>${Number.isFinite(d.cost2024) ? money0.format(d.cost2024) : "Unknown"}</td>
+      <td>${Number.isFinite(d.cost2026) ? money0.format(d.cost2026) : "Unknown"}</td>
+      <td>${Number.isFinite(unit) ? money2.format(unit) : "Unknown"}</td>
     </tr>`;
   }).join("");
 </script>

@@ -1,1 +1,428 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>North Wildwood — Beach Replenishment Dashboard</title>
 
+  <!-- Drop this file into GitHub Pages as index.html. It is fully self-contained except Chart.js CDN. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#0b1220;
+      --text:#eaf0ff;
+      --muted:#a9b6d3;
+      --line:rgba(255,255,255,.085);
+      --ok:#2dd4bf;
+      --minor:#fbbf24;
+      --moderate:#fb7185;
+      --major:#a78bfa;
+      --hydraulic:#60a5fa;
+      --backpass:#2dd4bf;
+      --quarry:#fbbf24;
+      --shadow:0 22px 70px rgba(0,0,0,.40);
+      --radius:18px;
+      --card:rgba(255,255,255,.035);
+      --card2:rgba(0,0,0,.18);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    html{background:var(--bg)}
+    body{
+      margin:0;
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:
+        radial-gradient(circle at 12% 8%, rgba(96,165,250,.12), transparent 28%),
+        radial-gradient(circle at 90% 6%, rgba(167,139,250,.10), transparent 25%),
+        var(--bg);
+      color:var(--text);
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      width:min(96vw,1600px);
+      margin:0 auto;
+      padding:16px 16px 28px;
+    }
+
+    .top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;color:var(--text)}
+    .brandLogo{
+      width:62px;height:62px;border-radius:16px;
+      display:inline-flex;align-items:center;justify-content:center;
+      background:linear-gradient(135deg,rgba(96,165,250,.95),rgba(45,212,191,.86));
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.18);
+      font-weight:950;font-size:28px;color:#06111f;
+      flex:0 0 auto;
+    }
+    .brandTitle{min-width:0}
+    .kicker{color:var(--muted);font-weight:850;font-size:16px;letter-spacing:.2px;text-transform:uppercase}
+    .name{font-size:32px;font-weight:950;letter-spacing:.2px;line-height:1.05}
+
+    .topRight{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap;min-width:0}
+    .pill{
+      display:flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(0,0,0,.16);
+      box-shadow:var(--shadow);
+      font-weight:950;font-size:12.5px;white-space:nowrap;
+    }
+    .dot{width:9px;height:9px;border-radius:999px;background:var(--ok);box-shadow:0 0 0 4px rgba(45,212,191,.16)}
+
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:10px}
+    .grid2{display:grid;grid-template-columns:1.15fr .85fr;gap:14px;margin-top:14px}
+    .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}.grid2,.grid3{grid-template-columns:1fr}}
+    @media(max-width:720px){
+      .top{flex-direction:column;align-items:flex-start}.topRight{width:100%;justify-content:flex-start}.grid{grid-template-columns:1fr}.name{font-size:27px}.kicker{font-size:13px}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:14px;
+      overflow:hidden;
+      position:relative;
+      isolation:isolate;
+      contain:paint;
+      transform:translateZ(0);
+      -webkit-transform:translateZ(0);
+    }
+    .panel{
+      background:var(--card2);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      position:relative;
+      overflow:hidden;
+      min-height:150px;
+    }
+    .hrow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px}
+    .hrow h2{margin:0;font-size:12.5px;letter-spacing:.22px;text-transform:uppercase;color:var(--muted);font-weight:950}
+    .hint{color:var(--muted);font-size:12.5px;line-height:1.35}
+    .bigNum{font-size:34px;font-weight:950;line-height:1.05;letter-spacing:.2px;margin-top:8px}
+    .smallLab{color:var(--muted);font-weight:950;font-size:11px;text-transform:uppercase;letter-spacing:.2px}
+    .miniText{font-size:12.5px;color:var(--muted);line-height:1.35;margin-top:8px}
+    .tag{display:inline-flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:950;font-size:12px;white-space:nowrap}
+    .chip{width:9px;height:9px;border-radius:99px;display:inline-block}
+    .chartWrapTall{height:350px;width:100%}
+    .chartWrap{height:270px;width:100%}
+    .foot{margin-top:10px;color:var(--muted);font-size:12.5px;line-height:1.3;text-align:center}
+
+    .seg{display:inline-flex;border:1px solid var(--line);background:rgba(0,0,0,.18);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+    .segBtn{appearance:none;border:0;background:transparent;color:var(--muted);font-weight:950;font-size:12px;letter-spacing:.12px;text-transform:uppercase;padding:10px 12px;cursor:pointer;white-space:nowrap}
+    .segBtn:hover{filter:brightness(1.08)}
+    .segBtn.isActive{color:var(--text);background:rgba(255,255,255,.08)}
+
+    .table{border-radius:14px;overflow:auto;border:1px solid var(--line);background:var(--card2)}
+    table{width:100%;border-collapse:collapse;text-align:center;min-width:860px}
+    th,td{padding:9px 8px;border-bottom:1px solid var(--line);font-size:13px;text-align:center}
+    th{color:var(--muted);font-weight:950;text-transform:uppercase;letter-spacing:.2px;font-size:11px}
+    td{color:var(--text)}
+    tr:last-child td{border-bottom:none}
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">
+      <div class="brandLogo">NW</div>
+      <div class="brandTitle">
+        <div class="kicker">North Wildwood · Beach Replenishment History</div>
+        <div class="name">North Wildwood</div>
+      </div>
+    </div>
+
+    <div class="topRight">
+      <div class="pill"><span class="dot"></span><span>Costs adjusted to 2026 dollars</span></div>
+      <div class="pill">2009–2024 · 17 projects</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="smallLab">Total placed sand</div>
+      <div class="bigNum" id="totalVolume">—</div>
+      <div class="miniText">Cubic yards across all listed projects.</div>
+    </div>
+    <div class="panel">
+      <div class="smallLab">Known 2026-adjusted cost</div>
+      <div class="bigNum" id="totalCost">—</div>
+      <div class="miniText">Known-cost projects only; unknown-cost entries are excluded.</div>
+    </div>
+    <div class="panel">
+      <div class="smallLab">Largest single placement</div>
+      <div class="bigNum" id="largestVolume">—</div>
+      <div class="miniText" id="largestVolumeSub">—</div>
+    </div>
+    <div class="panel">
+      <div class="smallLab">Highest known cost</div>
+      <div class="bigNum" id="largestCost">—</div>
+      <div class="miniText" id="largestCostSub">—</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="hrow">
+        <h2>Adjusted cost through time</h2>
+        <div class="tag"><span class="chip" style="background:var(--major)"></span>2026 $</div>
+      </div>
+      <div class="chartWrapTall"><canvas id="costChart"></canvas></div>
+      <div class="foot">Unknown-cost years are shown as gaps. The line overlays the cumulative known cost.</div>
+    </div>
+
+    <div class="card">
+      <div class="hrow">
+        <h2>Cubic yards by project</h2>
+        <div class="tag"><span class="chip" style="background:var(--hydraulic)"></span>method color</div>
+      </div>
+      <div class="chartWrapTall"><canvas id="volumeChart"></canvas></div>
+      <div class="foot">Bars are colored by placement method: hydraulic dredging, backpassing, and quarry.</div>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <div class="hrow">
+        <h2>Cumulative build-out</h2>
+        <div class="kicker" style="text-transform:none">Sand placed + money spent</div>
+      </div>
+      <div class="chartWrapTall"><canvas id="cumulativeChart"></canvas></div>
+      <div class="foot">This shows the long-run accumulation of nourishment volume and known spending through time.</div>
+    </div>
+
+    <div class="card">
+      <div class="hrow">
+        <h2>Cost efficiency</h2>
+        <div class="tag"><span class="chip" style="background:var(--moderate)"></span>$/yd³</div>
+      </div>
+      <div class="chartWrapTall"><canvas id="unitCostChart"></canvas></div>
+      <div class="foot">Cost per cubic yard is calculated only where a known cost exists.</div>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="card">
+      <div class="hrow"><h2>Volume by methodology</h2></div>
+      <div class="chartWrap"><canvas id="methodVolumeChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="hrow"><h2>Cost by methodology</h2></div>
+      <div class="chartWrap"><canvas id="methodCostChart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="hrow"><h2>Project mix</h2></div>
+      <div class="chartWrap"><canvas id="methodCountChart"></canvas></div>
+    </div>
+  </div>
+
+  <div style="height:14px"></div>
+
+  <div class="card">
+    <div class="hrow">
+      <h2>Full combined data table</h2>
+      <div class="hint">2024 dollars inflated to 2026 using factor 1.0526769362</div>
+    </div>
+    <div class="table">
+      <table aria-label="North Wildwood replenishment data">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Methodology</th>
+            <th>Volume (yd³)</th>
+            <th>Cost (2024 $)</th>
+            <th>Cost (2026 $)</th>
+            <th>Cost / yd³ (2026 $)</th>
+          </tr>
+        </thead>
+        <tbody id="dataBody"></tbody>
+      </table>
+    </div>
+    <div class="foot">Note: 2009 volume conflict existed between the two images. This dashboard uses 1,186,400 yd³ from the cost table, matching the combined Excel sheet.</div>
+  </div>
+</div>
+
+<script>
+  const DATA = [
+    {date:"Fall 2009", sort:2009.75, method:"Hydraulic Dredging", volume:1186400, cost2024:14661340, cost2026:15433654.472090974},
+    {date:"Spring 2010", sort:2010.25, method:"Hydraulic Dredging", volume:464000, cost2024:null, cost2026:null},
+    {date:"Spring 2012", sort:2012.25, method:"Backpassing", volume:96000, cost2024:2364606, cost2026:2489166.199449242},
+    {date:"Summer 2013", sort:2013.50, method:"Hydraulic Dredging", volume:150530, cost2024:5427202, cost2026:5713090.373611217},
+    {date:"Spring 2015", sort:2015.25, method:"Backpassing", volume:35364, cost2024:708837, cost2026:746176.3614399196},
+    {date:"Fall 2015", sort:2015.75, method:"Hydraulic Dredging", volume:40000, cost2024:null, cost2026:null},
+    {date:"Winter 2016", sort:2016.00, method:"Backpassing", volume:15000, cost2024:253367, cost2026:266713.597299447},
+    {date:"Spring 2016", sort:2016.25, method:"Backpassing", volume:128000, cost2024:1221428, cost2026:1285769.0848542585},
+    {date:"Fall 2016", sort:2016.75, method:"Backpassing", volume:30000, cost2024:276525, cost2026:291091.4897884475},
+    {date:"Spring 2017", sort:2017.25, method:"Backpassing", volume:206370, cost2024:3711444, cost2026:3906951.498874947},
+    {date:"Spring 2018", sort:2018.25, method:"Backpassing", volume:155000, cost2024:3997727, cost2026:4208315.0102070365},
+    {date:"Spring 2019", sort:2019.25, method:"Backpassing", volume:169062, cost2024:4063585, cost2026:4277642.207872664},
+    {date:"Spring 2020", sort:2020.25, method:"Backpassing", volume:210000, cost2024:5370430, cost2026:5653327.7985880915},
+    {date:"Spring 2021", sort:2021.25, method:"Backpassing", volume:356556, cost2024:4734059, cost2026:4983434.724008346},
+    {date:"Spring 2022", sort:2022.25, method:"Backpassing", volume:361221, cost2024:3795571, cost2026:3995510.0514883916},
+    {date:"Fall 2023", sort:2023.75, method:"Quarry", volume:4923, cost2024:361300, cost2026:380332.17705656297},
+    {date:"Summer 2024", sort:2024.50, method:"Hydraulic Dredging", volume:783000, cost2024:17000000, cost2026:17895507.915753033}
+  ];
+
+  const COLORS = {
+    "Hydraulic Dredging":"rgba(96,165,250,.88)",
+    "Backpassing":"rgba(45,212,191,.84)",
+    "Quarry":"rgba(251,191,36,.88)"
+  };
+
+  const BORDER_COLORS = {
+    "Hydraulic Dredging":"rgba(96,165,250,1)",
+    "Backpassing":"rgba(45,212,191,1)",
+    "Quarry":"rgba(251,191,36,1)"
+  };
+
+  const money0 = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:0});
+  const money2 = new Intl.NumberFormat("en-US", {style:"currency", currency:"USD", maximumFractionDigits:2});
+  const num0 = new Intl.NumberFormat("en-US", {maximumFractionDigits:0});
+
+  const labels = DATA.map(d=>d.date);
+  const years = DATA.map(d=>d.sort);
+  const cost2026 = DATA.map(d=>d.cost2026);
+  const volumes = DATA.map(d=>d.volume);
+  const barColors = DATA.map(d=>COLORS[d.method]);
+  const borderColors = DATA.map(d=>BORDER_COLORS[d.method]);
+
+  function sum(arr){ return arr.reduce((a,b)=>a+(Number.isFinite(b)?b:0),0); }
+  function byMethod(field){
+    const out = {"Hydraulic Dredging":0, "Backpassing":0, "Quarry":0};
+    for(const d of DATA){
+      const v = d[field];
+      if(Number.isFinite(v)) out[d.method] += v;
+    }
+    return out;
+  }
+  function countByMethod(){
+    const out = {"Hydraulic Dredging":0, "Backpassing":0, "Quarry":0};
+    for(const d of DATA) out[d.method] += 1;
+    return out;
+  }
+  function cumulative(field){
+    let total = 0;
+    return DATA.map(d=>{
+      if(Number.isFinite(d[field])) total += d[field];
+      return total;
+    });
+  }
+
+  function linearFit(xs, ys){
+    let n=0, sx=0, sy=0, sxy=0, sxx=0;
+    for(let i=0;i<xs.length;i++){
+      const x=xs[i], y=ys[i];
+      if(!Number.isFinite(x) || !Number.isFinite(y)) continue;
+      n++; sx+=x; sy+=y; sxy+=x*y; sxx+=x*x;
+    }
+    const denom = n*sxx - sx*sx;
+    if(n < 2 || Math.abs(denom) < 1e-12) return xs.map(()=>null);
+    const m = (n*sxy - sx*sy) / denom;
+    const b = (sy - m*sx) / n;
+    return xs.map(x=>m*x+b);
+  }
+
+  Chart.defaults.color = "rgba(234,240,255,.86)";
+  Chart.defaults.borderColor = "rgba(255,255,255,.08)";
+  Chart.defaults.font.family = "ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial";
+
+  const tooltipMoney = v => Number.isFinite(v) ? money0.format(v) : "Unknown";
+  const commonScales = {
+    x: {grid:{display:false}, ticks:{maxRotation:55,minRotation:45}},
+    y: {beginAtZero:true, grid:{color:"rgba(255,255,255,.08)"}}
+  };
+
+  new Chart(document.getElementById("costChart"), {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[
+        {label:"Project cost, adjusted to 2026 $", data:cost2026, backgroundColor:"rgba(167,139,250,.78)", borderColor:"rgba(167,139,250,1)", borderWidth:1, yAxisID:"y"},
+        {type:"line", label:"Cumulative known cost", data:cumulative("cost2026"), borderColor:"rgba(234,240,255,.9)", backgroundColor:"rgba(234,240,255,.15)", pointRadius:2, tension:.25, yAxisID:"y"},
+        {type:"line", label:"Linear cost trend", data:linearFit(years,cost2026), borderColor:"rgba(251,191,36,.9)", borderDash:[7,6], pointRadius:0, tension:0, yAxisID:"y"}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false},
+      plugins:{legend:{labels:{usePointStyle:true}}, tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${tooltipMoney(ctx.raw)}`}}},
+      scales:{...commonScales, y:{beginAtZero:true, ticks:{callback:v=>money0.format(v)}}}
+    }
+  });
+
+  new Chart(document.getElementById("volumeChart"), {
+    type:"bar",
+    data:{labels, datasets:[{label:"Volume placed (yd³)", data:volumes, backgroundColor:barColors, borderColor:borderColors, borderWidth:1}]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>`${num0.format(ctx.raw)} yd³ · ${DATA[ctx.dataIndex].method}`}}}, scales:{...commonScales, y:{beginAtZero:true, ticks:{callback:v=>num0.format(v)}}}}
+  });
+
+  new Chart(document.getElementById("cumulativeChart"), {
+    type:"line",
+    data:{
+      labels,
+      datasets:[
+        {label:"Cumulative volume (yd³)", data:cumulative("volume"), borderColor:"rgba(45,212,191,.95)", backgroundColor:"rgba(45,212,191,.10)", tension:.25, fill:true, yAxisID:"y"},
+        {label:"Cumulative known cost (2026 $)", data:cumulative("cost2026"), borderColor:"rgba(167,139,250,.95)", backgroundColor:"rgba(167,139,250,.10)", tension:.25, fill:false, yAxisID:"y1"}
+      ]
+    },
+    options:{responsive:true, maintainAspectRatio:false, interaction:{mode:"index",intersect:false}, plugins:{legend:{labels:{usePointStyle:true}}}, scales:{
+      x:{grid:{display:false}, ticks:{maxRotation:55,minRotation:45}},
+      y:{beginAtZero:true, position:"left", ticks:{callback:v=>num0.format(v)}},
+      y1:{beginAtZero:true, position:"right", grid:{drawOnChartArea:false}, ticks:{callback:v=>money0.format(v)}}
+    }}
+  });
+
+  new Chart(document.getElementById("unitCostChart"), {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[{label:"Cost per cubic yard (2026 $)", data:DATA.map(d=>Number.isFinite(d.cost2026)?d.cost2026/d.volume:null), backgroundColor:barColors, borderColor:borderColors, borderWidth:1}]
+    },
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:ctx=>Number.isFinite(ctx.raw)?`${money2.format(ctx.raw)} per yd³ · ${DATA[ctx.dataIndex].method}`:"Unknown"}}}, scales:{...commonScales, y:{beginAtZero:true, ticks:{callback:v=>money0.format(v)}}}}
+  });
+
+  function donut(id, title, obj, formatter){
+    const keys = Object.keys(obj);
+    new Chart(document.getElementById(id), {
+      type:"doughnut",
+      data:{labels:keys, datasets:[{label:title, data:keys.map(k=>obj[k]), backgroundColor:keys.map(k=>COLORS[k]), borderColor:"rgba(11,18,32,.9)", borderWidth:2}]},
+      options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:"bottom", labels:{usePointStyle:true}}, tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${formatter(ctx.raw)}`}}}, cutout:"62%"}
+    });
+  }
+  donut("methodVolumeChart", "Volume", byMethod("volume"), v=>`${num0.format(v)} yd³`);
+  donut("methodCostChart", "Cost", byMethod("cost2026"), v=>money0.format(v));
+  donut("methodCountChart", "Projects", countByMethod(), v=>`${v} projects`);
+
+  document.getElementById("totalVolume").textContent = `${num0.format(sum(volumes))} yd³`;
+  document.getElementById("totalCost").textContent = money0.format(sum(cost2026));
+  const maxVol = DATA.reduce((a,b)=>b.volume>a.volume?b:a, DATA[0]);
+  document.getElementById("largestVolume").textContent = `${num0.format(maxVol.volume)} yd³`;
+  document.getElementById("largestVolumeSub").textContent = `${maxVol.date} · ${maxVol.method}`;
+  const maxCost = DATA.filter(d=>Number.isFinite(d.cost2026)).reduce((a,b)=>b.cost2026>a.cost2026?b:a, DATA[0]);
+  document.getElementById("largestCost").textContent = money0.format(maxCost.cost2026);
+  document.getElementById("largestCostSub").textContent = `${maxCost.date} · ${maxCost.method}`;
+
+  const body = document.getElementById("dataBody");
+  body.innerHTML = DATA.map(d=>{
+    const unit = Number.isFinite(d.cost2026) ? d.cost2026/d.volume : null;
+    return `<tr>
+      <td>${d.date}</td>
+      <td><span class="tag"><span class="chip" style="background:${COLORS[d.method]}"></span>${d.method}</span></td>
+      <td>${num0.format(d.volume)}</td>
+      <td>${Number.isFinite(d.cost2024) ? money0.format(d.cost2024) : "Unknown"}</td>
+      <td>${Number.isFinite(d.cost2026) ? money0.format(d.cost2026) : "Unknown"}</td>
+      <td>${Number.isFinite(unit) ? money2.format(unit) : "Unknown"}</td>
+    </tr>`;
+  }).join("");
+</script>
+</body>
+</html>
